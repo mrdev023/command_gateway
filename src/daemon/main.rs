@@ -22,7 +22,6 @@ fn main() -> anyhow::Result<()> {
             .context("Failed at accepting a connection on the unix listener")?;
         handle_stream(unix_stream)?;
     }
-    Ok(())
 }
 
 fn handle_stream(mut unix_stream: UnixStream) -> anyhow::Result<()> {
@@ -31,6 +30,10 @@ fn handle_stream(mut unix_stream: UnixStream) -> anyhow::Result<()> {
         .read_to_string(&mut message)
         .context("Failed at reading the unix stream")?;
 
-    println!("{}", message);
+    println!("We received this message: {}\nReplying...", message);
+
+    unix_stream
+        .write(b"I hear you!")
+        .context("Failed at writing onto the unix stream")?;
     Ok(())
 }
