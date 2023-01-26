@@ -1,39 +1,41 @@
-use std::os::unix::net::{UnixListener, UnixStream};
-use anyhow::Context;
-use std::io::{Read, Write};
+use tonic::{transport::Server, Request, Response, Status};
 
-fn main() -> anyhow::Result<()> {
-    let socket_path = "mysocket";
+use hello_world::greeter_server::{Greeter, GreeterServer};
+use hello_world::{HelloReply, HelloRequest};
 
-    if std::fs::metadata(socket_path).is_ok() {
-        println!("A socket is already present. Deleting...");
-        std::fs::remove_file(socket_path).with_context(|| {
-            format!("could not delete previous socket at {:?}", socket_path)
-        })?;
-    }
+pub mod hello_world {
+    tonic::include_proto!("helloworld");
+}
 
-    let unix_listener =
-        UnixListener::bind(socket_path).context("Could not create the unix socket")?;
+#[derive(Default)]
+pub struct MyGreeter {}
 
-    // put the daemon logic in a loop to accept several connections
-    loop {
-        let (mut unix_stream, socket_address) = unix_listener
-            .accept()
-            .context("Failed at accepting a connection on the unix listener")?;
-        handle_stream(unix_stream)?;
+#[tonic::async_trait]
+impl Greeter for MyGreeter {
+    async fn say_hello(
+        &self,
+        request: Request<HelloRequest>,
+    ) -> Result<Response<HelloReply>, Status> {
+        println!("Got a request from {:?}", request.remote_addr());
+
+        let reply = hello_world::HelloReply {
+            message: format!("Hello {}!", request.into_inner().name),
+        };
+        Ok(Response::new(reply))
     }
 }
 
-fn handle_stream(mut unix_stream: UnixStream) -> anyhow::Result<()> {
-    let mut message = String::new();
-    unix_stream
-        .read_to_string(&mut message)
-        .context("Failed at reading the unix stream")?;
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let addr = "[::1]:50051".parse().unwrap();
+    let greeter = MyGreeter::default();
 
-    println!("We received this message: {}\nReplying...", message);
+    println!("GreeterServer listening on {}", addr);
 
-    unix_stream
-        .write(b"I hear you!")
-        .context("Failed at writing onto the unix stream")?;
+    Server::builder()
+        .add_service(GreeterServer::new(greeter))
+        .serve(addr)
+        .await?;
+
     Ok(())
 }

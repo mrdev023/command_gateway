@@ -1,41 +1,21 @@
-use std::os::unix::net::{UnixListener, UnixStream};
-use std::io::{Read, Write};
+use hello_world::greeter_client::GreeterClient;
+use hello_world::HelloRequest;
 
-use anyhow::Context;
-
-fn main() -> anyhow::Result<()> {
-    let socket_path = "mysocket";
-
-    let mut unix_stream =
-        UnixStream::connect(socket_path).context("Could not create stream")?;
-
-    write_request_and_shutdown(&mut unix_stream)?;
-    read_from_stream(&mut unix_stream)?;
-
-    Ok(())
+pub mod hello_world {
+    tonic::include_proto!("helloworld");
 }
 
-fn write_request_and_shutdown(unix_stream: &mut UnixStream) -> anyhow::Result<()> {
-    unix_stream
-        .write(b"Hello?")
-        .context("Failed at writing onto the unix stream")?;
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut client = GreeterClient::connect("http://[::1]:50051").await?;
 
-    println!("We sent a request");
-    println!("Shutting down writing on the stream, waiting for response...");
+    let request = tonic::Request::new(HelloRequest {
+        name: "Tonic".into(),
+    });
 
-    unix_stream
-        .shutdown(std::net::Shutdown::Write)
-        .context("Could not shutdown writing on the stream")?;
+    let response = client.say_hello(request).await?;
 
-    Ok(())
-}
+    println!("RESPONSE={:?}", response);
 
-fn read_from_stream(unix_stream: &mut UnixStream) -> anyhow::Result<()> {
-    let mut response = String::new();
-    unix_stream
-        .read_to_string(&mut response)
-        .context("Failed at reading the unix stream")?;
-
-    println!("We received this response: {}", response);
     Ok(())
 }
