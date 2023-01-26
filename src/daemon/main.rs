@@ -1,11 +1,22 @@
-use tonic::{transport::Server, Request, Response, Status};
+#![cfg_attr(not(unix), allow(unused_imports))]
 
-use hello_world::greeter_server::{Greeter, GreeterServer};
-use hello_world::{HelloReply, HelloRequest};
+use std::path::Path;
+#[cfg(unix)]
+use tokio::net::UnixListener;
+#[cfg(unix)]
+use tokio_stream::wrappers::UnixListenerStream;
+#[cfg(unix)]
+use tonic::transport::server::UdsConnectInfo;
+use tonic::{transport::Server, Request, Response, Status};
 
 pub mod hello_world {
     tonic::include_proto!("helloworld");
 }
+
+use hello_world::{
+    greeter_server::{Greeter, GreeterServer},
+    HelloReply, HelloRequest,
+};
 
 #[derive(Default)]
 pub struct MyGreeter {}
@@ -16,7 +27,11 @@ impl Greeter for MyGreeter {
         &self,
         request: Request<HelloRequest>,
     ) -> Result<Response<HelloReply>, Status> {
-        println!("Got a request from {:?}", request.remote_addr());
+        #[cfg(unix)]
+        {
+            let conn_info = request.extensions().get::<UdsConnectInfo>().unwrap();
+            println!("Got a request {:?} with info {:?}", request, conn_info);
+        }
 
         let reply = hello_world::HelloReply {
             message: format!("Hello {}!", request.into_inner().name),
@@ -25,17 +40,27 @@ impl Greeter for MyGreeter {
     }
 }
 
+#[cfg(unix)]
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "[::1]:50051".parse().unwrap();
+    let path = "helloworld.sock";
+
+    std::fs::create_dir_all(Path::new(path).parent().unwrap())?;
+
     let greeter = MyGreeter::default();
 
-    println!("GreeterServer listening on {}", addr);
+    let uds = UnixListener::bind(path)?;
+    let uds_stream = UnixListenerStream::new(uds);
 
     Server::builder()
         .add_service(GreeterServer::new(greeter))
-        .serve(addr)
+        .serve_with_incoming(uds_stream)
         .await?;
 
     Ok(())
+}
+
+#[cfg(not(unix))]
+fn main() {
+    panic!("The `uds` example only works on unix systems!");
 }
