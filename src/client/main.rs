@@ -1,26 +1,13 @@
 #![cfg_attr(not(unix), allow(unused_imports))]
 
-pub mod internal {
-    tonic::include_proto!("internal");
-}
+pub mod client;
 
-use internal::{unix_client::UnixClient, AuthorizeRequest};
-#[cfg(unix)]
-use tokio::net::UnixStream;
-use tonic::transport::{Endpoint, Uri};
-use tower::service_fn;
+use libcommand::internal::{AuthorizeRequest};
 
 #[cfg(unix)]
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let channel = Endpoint::try_from("http://[::]:50051")?
-        .connect_with_connector(service_fn(|_: Uri| {
-            // Connect to a Uds socket
-            UnixStream::connect(libcommand::SOCK_FILE)
-        }))
-        .await?;
-
-    let mut client = UnixClient::new(channel);
+    let mut client = client::connect().await?;
 
     let request = tonic::Request::new(AuthorizeRequest {
         identifier: "Tonic".into(),

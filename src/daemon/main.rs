@@ -9,11 +9,7 @@ use tokio_stream::wrappers::UnixListenerStream;
 use tonic::transport::server::UdsConnectInfo;
 use tonic::{transport::Server, Request, Response, Status};
 
-pub mod internal {
-    tonic::include_proto!("internal");
-}
-
-use internal::{
+use libcommand::internal::{
     unix_server::{Unix, UnixServer},
     AuthorizeRequest, AuthorizeResponse, TerminateRequest, TerminateResponse
 };
@@ -33,8 +29,8 @@ impl Unix for DaemonServer {
             println!("Got a request {:?} with info {:?}", request, conn_info);
         }
 
-        let reply = internal::AuthorizeResponse {
-            status: internal::AuthorizationStatus::Authorized.into(),
+        let reply = libcommand::internal::AuthorizeResponse {
+            status: libcommand::internal::AuthorizationStatus::Authorized.into(),
             error_message: "".into(),
             log_file: "".into(),
             session_uuid: "".into()
@@ -52,8 +48,8 @@ impl Unix for DaemonServer {
             println!("Got a request {:?} with info {:?}", request, conn_info);
         }
 
-        let reply = internal::TerminateResponse {
-            status: internal::TerminateStatus::Ok.into(),
+        let reply = libcommand::internal::TerminateResponse {
+            status: libcommand::internal::TerminateStatus::Ok.into(),
             error_message: "".into(),
         };
         Ok(Response::new(reply))
