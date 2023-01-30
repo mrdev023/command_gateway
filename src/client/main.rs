@@ -2,7 +2,10 @@
 
 pub mod client;
 
-use libcommand::internal::{AuthorizeRequest};
+use std::io::{BufRead, Write};
+use std::process::Stdio;
+use libcommand::internal::{AuthorizeRequest, AuthorizeResponse};
+use tonic::Response;
 
 #[cfg(unix)]
 #[tokio::main]
@@ -22,7 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         public_ssh_keys: "Tonic".into(),
     });
 
-    let response = client.authorize(request).await?;
+    let response : Response<AuthorizeResponse> = client.authorize(request).await?;
 
     println!("RESPONSE={:?}", response);
 
