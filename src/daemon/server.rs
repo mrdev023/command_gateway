@@ -2,10 +2,10 @@
 
 #[cfg(unix)]
 use tonic::transport::server::UdsConnectInfo;
-use tonic::{transport::Server, Request, Response, Status};
+use tonic::{Request, Response, Status};
 
 use libcommand::internal::{
-    unix_server::{Unix, UnixServer},
+    unix_server::Unix,
     AuthorizeRequest, AuthorizeResponse, TerminateRequest, TerminateResponse
 };
 
