@@ -2,8 +2,6 @@
 
 pub mod client;
 
-use std::io::{BufRead, Write};
-use std::process::Stdio;
 use libcommand::internal::{AuthorizeRequest, AuthorizeResponse};
 use tonic::Response;
 
@@ -13,7 +11,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let arg = std::env::args()
     //     .skip(1)
     //     .next().unwrap();
-    let arg = String::from("{\"command\": \"nu\", \"envs\": {}, \"args\": []}");
+    let arg = String::from("{\"command\": \"/usr/bin/nu\", \"envs\": {}, \"args\": []}");
     let mut command : std::process::Command = serde_json::from_str::<libcommand::Command>(&arg)
         .unwrap()
         .into();
