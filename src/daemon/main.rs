@@ -9,32 +9,52 @@ use tokio_stream::wrappers::UnixListenerStream;
 use tonic::transport::server::UdsConnectInfo;
 use tonic::{transport::Server, Request, Response, Status};
 
-pub mod hello_world {
-    tonic::include_proto!("helloworld");
+pub mod internal {
+    tonic::include_proto!("internal");
 }
 
-use hello_world::{
-    greeter_server::{Greeter, GreeterServer},
-    HelloReply, HelloRequest,
+use internal::{
+    unix_server::{Unix, UnixServer},
+    AuthorizeRequest, AuthorizeResponse, TerminateRequest, TerminateResponse
 };
 
 #[derive(Default)]
-pub struct MyGreeter {}
+pub struct DaemonServer {}
 
 #[tonic::async_trait]
-impl Greeter for MyGreeter {
-    async fn say_hello(
+impl Unix for DaemonServer {
+    async fn authorize(
         &self,
-        request: Request<HelloRequest>,
-    ) -> Result<Response<HelloReply>, Status> {
+        request: Request<AuthorizeRequest>,
+    ) -> Result<Response<AuthorizeResponse>, Status> {
         #[cfg(unix)]
         {
             let conn_info = request.extensions().get::<UdsConnectInfo>().unwrap();
             println!("Got a request {:?} with info {:?}", request, conn_info);
         }
 
-        let reply = hello_world::HelloReply {
-            message: format!("Hello {}!", request.into_inner().name),
+        let reply = internal::AuthorizeResponse {
+            status: internal::AuthorizationStatus::Authorized.into(),
+            error_message: "".into(),
+            log_file: "".into(),
+            session_uuid: "".into()
+        };
+        Ok(Response::new(reply))
+    }
+
+    async fn terminate(
+        &self,
+        request: Request<TerminateRequest>,
+    ) -> Result<Response<TerminateResponse>, Status> {
+        #[cfg(unix)]
+        {
+            let conn_info = request.extensions().get::<UdsConnectInfo>().unwrap();
+            println!("Got a request {:?} with info {:?}", request, conn_info);
+        }
+
+        let reply = internal::TerminateResponse {
+            status: internal::TerminateStatus::Ok.into(),
+            error_message: "".into(),
         };
         Ok(Response::new(reply))
     }
@@ -43,17 +63,15 @@ impl Greeter for MyGreeter {
 #[cfg(unix)]
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let path = "helloworld.sock";
+    std::fs::create_dir_all(Path::new(libcommand::SOCK_FILE).parent().unwrap())?;
 
-    std::fs::create_dir_all(Path::new(path).parent().unwrap())?;
+    let server = DaemonServer::default();
 
-    let greeter = MyGreeter::default();
-
-    let uds = UnixListener::bind(path)?;
+    let uds = UnixListener::bind(libcommand::SOCK_FILE)?;
     let uds_stream = UnixListenerStream::new(uds);
 
     Server::builder()
-        .add_service(GreeterServer::new(greeter))
+        .add_service(UnixServer::new(server))
         .serve_with_incoming(uds_stream)
         .await?;
 

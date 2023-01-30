@@ -1,10 +1,10 @@
 #![cfg_attr(not(unix), allow(unused_imports))]
 
-pub mod hello_world {
-    tonic::include_proto!("helloworld");
+pub mod internal {
+    tonic::include_proto!("internal");
 }
 
-use hello_world::{greeter_client::GreeterClient, HelloRequest};
+use internal::{unix_client::UnixClient, AuthorizeRequest};
 #[cfg(unix)]
 use tokio::net::UnixStream;
 use tonic::transport::{Endpoint, Uri};
@@ -15,20 +15,19 @@ use tower::service_fn;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let channel = Endpoint::try_from("http://[::]:50051")?
         .connect_with_connector(service_fn(|_: Uri| {
-            let path = "helloworld.sock";
-
             // Connect to a Uds socket
-            UnixStream::connect(path)
+            UnixStream::connect(libcommand::SOCK_FILE)
         }))
         .await?;
 
-    let mut client = GreeterClient::new(channel);
+    let mut client = UnixClient::new(channel);
 
-    let request = tonic::Request::new(HelloRequest {
-        name: "Tonic".into(),
+    let request = tonic::Request::new(AuthorizeRequest {
+        identifier: "Tonic".into(),
+        public_ssh_keys: "Tonic".into(),
     });
 
-    let response = client.say_hello(request).await?;
+    let response = client.authorize(request).await?;
 
     println!("RESPONSE={:?}", response);
 

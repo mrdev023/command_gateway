@@ -1,0 +1,44 @@
+syntax = "proto3";
+package internal;
+
+service Unix {
+  // Message send by the command gateway to the daemon
+  rpc authorize(AuthorizeRequest) returns (AuthorizeResponse);
+
+  // Message send when user quit shell
+  rpc terminate(TerminateRequest) returns (TerminateResponse);
+}
+
+message AuthorizeRequest {
+  // identifier of the project
+  string identifier = 1;
+  // ssh_keys from ssh agent
+  string public_ssh_keys = 2;
+  // command?
+}
+
+enum AuthorizationStatus {
+  AUTHORIZED = 0;
+  PERMISSION_DENIED = 1;
+}
+
+message AuthorizeResponse {
+  AuthorizationStatus status = 1;
+  string error_message = 2;
+  string session_uuid = 3;
+  string log_file = 4;
+}
+
+message TerminateRequest {
+  string session_uuid = 1;
+}
+
+enum TerminateStatus {
+  OK = 0;
+  FAILED = 1;
+}
+
+message TerminateResponse {
+    TerminateStatus status = 1;
+    string error_message = 2;
+}
