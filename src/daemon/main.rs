@@ -12,6 +12,7 @@ pub use sessions::{
 };
 
 use std::path::Path;
+use std::time::Duration;
 #[cfg(unix)]
 use tokio::net::UnixListener;
 
@@ -30,6 +31,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let uds = UnixListener::bind(libcommand::SOCK_FILE)?;
     let uds_stream = UnixListenerStream::new(uds);
+
+    std::thread::spawn(|| {
+        loop {
+            if let Ok(lock) = get_sessions_lock() {
+                println!("Sessions log");
+                for session in lock.iter() {
+                    println!("ID: {id}, PID: {pid}", id = session.id, pid = session.pid);
+                }
+            }
+            std::thread::sleep(Duration::from_millis(1000));
+        }
+    });
 
     Server::builder()
         .add_service(UnixServer::new(server))
