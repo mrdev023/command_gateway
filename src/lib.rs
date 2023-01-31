@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 
-pub const SOCK_FILE : &'static str = "command_gateway.sock";
+pub const SOCK_FILE : &'static str = "/var/run/command_gateway.sock";
 
 pub mod internal {
     tonic::include_proto!("internal");
