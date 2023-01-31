@@ -6,7 +6,8 @@ use tonic::{Request, Response, Status};
 
 use libcommand::internal::{
     unix_server::Unix,
-    AuthorizeRequest, AuthorizeResponse, AuthorizationStatus, TerminateRequest, TerminateResponse, TerminateStatus
+    AuthorizeRequest, AuthorizeResponse, AuthorizationStatus,
+    TerminateRequest, TerminateResponse, TerminateStatus
 };
 
 #[derive(Default)]
@@ -26,7 +27,6 @@ impl Unix for DaemonServer {
 
         let reply = AuthorizeResponse {
             status: AuthorizationStatus::Authorized.into(),
-            error_message: "".into(),
             session_uuid: "".into()
         };
         Ok(Response::new(reply))
@@ -43,8 +43,7 @@ impl Unix for DaemonServer {
         }
 
         let reply = TerminateResponse {
-            status: TerminateStatus::Ok.into(),
-            error_message: "".into(),
+            status: TerminateStatus::Ok.into()
         };
         Ok(Response::new(reply))
     }

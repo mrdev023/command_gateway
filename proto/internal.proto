@@ -25,12 +25,12 @@ enum AuthorizationStatus {
 
 message AuthorizeResponse {
   AuthorizationStatus status = 1;
-  string error_message = 2;
-  string session_uuid = 3;
+  string session_uuid = 2;
 }
 
 message TerminateRequest {
   string session_uuid = 1;
+  string log_file = 2;
 }
 
 enum TerminateStatus {
@@ -40,5 +40,4 @@ enum TerminateStatus {
 
 message TerminateResponse {
     TerminateStatus status = 1;
-    string error_message = 2;
 }
