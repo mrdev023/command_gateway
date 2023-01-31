@@ -2,7 +2,7 @@
 
 pub mod client;
 
-use libcommand::internal::{AuthorizeRequest, AuthorizeResponse};
+use libcommand::internal::{AuthorizationStatus, AuthorizeRequest, AuthorizeResponse};
 use tonic::Response;
 
 #[cfg(unix)]
@@ -11,23 +11,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arg = std::env::args()
         .skip(1)
         .last().unwrap();
-    let mut command : std::process::Command = serde_json::from_str::<libcommand::Command>(&arg)
-        .unwrap()
-        .into();
+    let command_arg : libcommand::Command = serde_json::from_str::<libcommand::Command>(&arg)
+        .unwrap();
 
     let mut client = client::connect().await?;
 
     let request = tonic::Request::new(AuthorizeRequest {
-        identifier: "Tonic".into(),
-        public_ssh_keys: "Tonic".into(),
+        identifier: command_arg.identifier.clone(),
+        token: command_arg.token.clone(),
+        command: command_arg.command.clone()
     });
 
     let response : Response<AuthorizeResponse> = client.authorize(request).await?;
 
-    println!("RESPONSE={:?}", response);
-
-    let mut child = command.spawn().unwrap();
-    child.wait().unwrap();
+    if AuthorizationStatus::from_i32(response.get_ref().status) == Some(AuthorizationStatus::Authorized) {
+        let mut command : std::process::Command = command_arg.into();
+        let mut child = command.spawn().unwrap();
+        child.wait().unwrap();
+    } else {
+        eprintln!("Permission denied");
+    }
 
     Ok(())
 }

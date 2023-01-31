@@ -13,8 +13,9 @@ message AuthorizeRequest {
   // identifier of the project
   string identifier = 1;
   // ssh_keys from ssh agent
-  string public_ssh_keys = 2;
-  // command?
+  string token = 2;
+  // command like /bin/bash
+  string command = 3;
 }
 
 enum AuthorizationStatus {
@@ -26,7 +27,6 @@ message AuthorizeResponse {
   AuthorizationStatus status = 1;
   string error_message = 2;
   string session_uuid = 3;
-  string log_file = 4;
 }
 
 message TerminateRequest {

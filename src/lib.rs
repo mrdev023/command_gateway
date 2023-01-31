@@ -9,9 +9,11 @@ pub mod internal {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Command {
-    command: String,
-    envs: HashMap<String, String>,
-    args: Vec<String>
+    pub identifier: String,
+    pub token: String,
+    pub command: String,
+    pub envs: HashMap<String, String>,
+    pub args: Vec<String>
 }
 
 impl Into<std::process::Command> for Command {

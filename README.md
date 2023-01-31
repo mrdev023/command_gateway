@@ -8,4 +8,4 @@
 
 - `docker build . -t gateway`
 - `docker run -p 22:22 gateway`
-- `ssh test@localhost "{\"command\": \"/bin/bash\", \"envs\": {}, \"args\": []}"`
+- `ssh test@localhost "{\"identifier\": \"project_env\", \"token\": \"token\", \"command\": \"/bin/bash\", \"envs\": {}, \"args\": []}"`
