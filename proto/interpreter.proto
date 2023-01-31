@@ -20,13 +20,7 @@ message AuthorizeRequest {
   uint32 pid = 4;
 }
 
-enum AuthorizationStatus {
-  AUTHORIZED = 0;
-  PERMISSION_DENIED = 1;
-}
-
 message AuthorizeResponse {
-  AuthorizationStatus status = 1;
   string session_id = 2;
 }
 
@@ -35,11 +29,4 @@ message TerminateRequest {
   string log_file = 2;
 }
 
-enum TerminateStatus {
-  OK = 0;
-  FAILED = 1;
-}
-
-message TerminateResponse {
-    TerminateStatus status = 1;
-}
+message TerminateResponse {}

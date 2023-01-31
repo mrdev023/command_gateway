@@ -1,10 +1,10 @@
 pub struct Session {
     pub id: String,
-    pub pid: usize,
+    pub pid: u32,
 }
 
-impl From<usize> for Session {
-    fn from(pid: usize) -> Self {
+impl From<u32> for Session {
+    fn from(pid: u32) -> Self {
         Self {
             id: format!("ID{pid}"),
             pid

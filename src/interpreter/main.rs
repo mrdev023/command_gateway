@@ -2,7 +2,7 @@
 
 pub mod client;
 
-use libcommand::interpreter::{AuthorizationStatus, AuthorizeRequest, AuthorizeResponse};
+use libcommand::interpreter::{AuthorizeRequest, AuthorizeResponse, TerminateRequest};
 use tonic::Response;
 
 #[cfg(unix)]
@@ -25,13 +25,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let response : Response<AuthorizeResponse> = client.authorize(request).await?;
 
-    if AuthorizationStatus::from_i32(response.get_ref().status) == Some(AuthorizationStatus::Authorized) {
-        let mut command : std::process::Command = command_arg.into();
-        let mut child = command.spawn().unwrap();
-        child.wait().unwrap();
-    } else {
-        eprintln!("Permission denied");
-    }
+    let mut command : std::process::Command = command_arg.into();
+    let mut child = command.spawn().unwrap();
+    child.wait().unwrap();
+
+    client.terminate(tonic::Request::new(TerminateRequest {
+        session_id: response.get_ref().session_id.clone(),
+        log_file: "".to_string()
+    })).await?;
 
     Ok(())
 }
