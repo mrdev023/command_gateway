@@ -3,8 +3,8 @@ use serde::{Serialize, Deserialize};
 
 pub const SOCK_FILE : &'static str = "/var/run/command_gateway.sock";
 
-pub mod internal {
-    tonic::include_proto!("internal");
+pub mod interpreter {
+    tonic::include_proto!("interpreter");
 }
 
 #[derive(Serialize, Deserialize, Debug)]

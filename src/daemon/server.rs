@@ -2,7 +2,7 @@
 
 use tonic::{Request, Response, Status};
 
-use libcommand::internal::{
+use libcommand::interpreter::{
     unix_server::Unix,
     AuthorizeRequest, AuthorizeResponse, AuthorizationStatus,
     TerminateRequest, TerminateResponse, TerminateStatus

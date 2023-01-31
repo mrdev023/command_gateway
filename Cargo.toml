@@ -11,12 +11,12 @@ name = "libcommand"
 path = "src/lib.rs"
 
 [[bin]]
-name = "daemon"
+name = "gtwyd"
 path = "src/daemon/main.rs"
 
 [[bin]]
-name = "client"
-path = "src/client/main.rs"
+name = "gtwy_interpreter"
+path = "src/interpreter/main.rs"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }

@@ -1,4 +1,4 @@
-use libcommand::internal::unix_client::UnixClient;
+use libcommand::interpreter::unix_client::UnixClient;
 
 #[cfg(unix)]
 use tokio::net::UnixStream;

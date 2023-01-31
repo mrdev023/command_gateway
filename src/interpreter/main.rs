@@ -2,7 +2,7 @@
 
 pub mod client;
 
-use libcommand::internal::{AuthorizationStatus, AuthorizeRequest, AuthorizeResponse};
+use libcommand::interpreter::{AuthorizationStatus, AuthorizeRequest, AuthorizeResponse};
 use tonic::Response;
 
 #[cfg(unix)]

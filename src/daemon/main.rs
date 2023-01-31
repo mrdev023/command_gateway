@@ -9,7 +9,7 @@ use tokio::net::UnixListener;
 use tokio_stream::wrappers::UnixListenerStream;
 
 use tonic::transport::Server;
-use libcommand::internal::unix_server::UnixServer;
+use libcommand::interpreter::unix_server::UnixServer;
 
 #[cfg(unix)]
 #[tokio::main]
