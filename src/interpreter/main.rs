@@ -19,7 +19,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let request = tonic::Request::new(AuthorizeRequest {
         identifier: command_arg.identifier.clone(),
         token: command_arg.token.clone(),
-        command: command_arg.command.clone()
+        command: command_arg.command.clone(),
+        pid: std::process::id()
     });
 
     let response : Response<AuthorizeResponse> = client.authorize(request).await?;

@@ -16,6 +16,8 @@ message AuthorizeRequest {
   string token = 2;
   // command like /bin/bash
   string command = 3;
+  // pid
+  uint32 pid = 4;
 }
 
 enum AuthorizationStatus {
@@ -25,11 +27,11 @@ enum AuthorizationStatus {
 
 message AuthorizeResponse {
   AuthorizationStatus status = 1;
-  string session_uuid = 2;
+  string session_id = 2;
 }
 
 message TerminateRequest {
-  string session_uuid = 1;
+  string session_id = 1;
   string log_file = 2;
 }
 

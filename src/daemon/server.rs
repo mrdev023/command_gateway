@@ -9,7 +9,7 @@ use libcommand::interpreter::{
 };
 
 #[derive(Default)]
-pub struct DaemonServer {}
+pub struct DaemonServer;
 
 #[tonic::async_trait]
 impl Unix for DaemonServer {
@@ -19,7 +19,7 @@ impl Unix for DaemonServer {
     ) -> Result<Response<AuthorizeResponse>, Status> {
         let reply = AuthorizeResponse {
             status: AuthorizationStatus::Authorized.into(),
-            session_uuid: uuid::Uuid::new_v4().to_string()
+            session_id: uuid::Uuid::new_v4().to_string()
         };
         Ok(Response::new(reply))
     }
