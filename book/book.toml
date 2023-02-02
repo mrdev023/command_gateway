@@ -1,0 +1,6 @@
+[book]
+authors = ["Florian RICHER"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Command gateway"
