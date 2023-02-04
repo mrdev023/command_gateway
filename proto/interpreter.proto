@@ -10,18 +10,16 @@ service Unix {
 }
 
 message AuthorizeRequest {
-  // identifier of the project
-  string identifier = 1;
-  // ssh_keys from ssh agent
-  string token = 2;
-  // command like /bin/bash
-  string command = 3;
+  // json like argument
+  string command_arg = 1;
   // pid
-  uint32 pid = 4;
+  uint32 pid = 2;
 }
 
 message AuthorizeResponse {
-  string session_id = 2;
+  string session_id = 1;
+  // json like arguments changed by daemon
+  string command_arg = 2;
 }
 
 message TerminateRequest {

@@ -22,6 +22,7 @@ impl Unix for DaemonServer {
         super::SESSIONS.lock().unwrap().push(session);
 
         Ok(Response::new(AuthorizeResponse {
+            command_arg: request.get_ref().command_arg.clone(),
             session_id
         }))
     }

@@ -3,6 +3,7 @@
 use std::sync::Mutex;
 mod server;
 mod sessions;
+mod configuration;
 
 pub(self) static SESSIONS : Mutex<Vec<libcommand::Session>> = Mutex::new(Vec::new());
 

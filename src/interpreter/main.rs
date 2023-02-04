@@ -11,19 +11,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arg = std::env::args()
         .skip(1)
         .last().unwrap();
-    let command_arg : libcommand::Command = serde_json::from_str::<libcommand::Command>(&arg)
-        .unwrap();
 
     let mut client = client::connect().await?;
 
     let request = tonic::Request::new(AuthorizeRequest {
-        identifier: command_arg.identifier.clone(),
-        token: command_arg.token.clone(),
-        command: command_arg.command.clone(),
+        command_arg: arg,
         pid: std::process::id()
     });
 
     let response : Response<AuthorizeResponse> = client.authorize(request).await?;
+
+    let command_arg = libcommand::Command::from(response.get_ref().command_arg.as_ref());
 
     let mut command : std::process::Command = command_arg.into();
     let mut child = command.spawn().unwrap();
