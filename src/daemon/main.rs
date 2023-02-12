@@ -6,6 +6,7 @@ mod sessions;
 mod configuration;
 
 pub(self) static SESSIONS : Mutex<Vec<libcommand::Session>> = Mutex::new(Vec::new());
+pub(self) static CONFIGURATION : Mutex<Option<configuration::Configuration>> = Mutex::new(None);
 
 pub use sessions::{
     get_sessions_lock,
@@ -14,19 +15,24 @@ pub use sessions::{
 
 use std::path::Path;
 use std::time::Duration;
-#[cfg(unix)]
-use tokio::net::UnixListener;
 
 #[cfg(unix)]
 use tokio_stream::wrappers::UnixListenerStream;
 use tonic::transport::Server;
 
+#[cfg(unix)]
+use tokio::net::UnixListener;
+
+#[cfg(windows)]
+use uds_windows::UnixListener;
+
 use libcommand::interpreter::unix_server::UnixServer;
 
-#[cfg(unix)]
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(Path::new(libcommand::SOCK_FILE).parent().unwrap())?;
+
+    *CONFIGURATION.get_mut().unwrap() = Some(configuration::Configuration::read_or_create());
 
     let server = server::DaemonServer::default();
 
@@ -51,9 +57,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     Ok(())
-}
-
-#[cfg(not(unix))]
-fn main() {
-    panic!("The `uds` example only works on unix systems!");
 }

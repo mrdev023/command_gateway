@@ -34,5 +34,8 @@ tower = "0.4" # Required for tonic with unix socket
 prost = "0.11" # Required for tonic
 tonic = "0.8"
 
+[target.'cfg(windows)'.dependencies]
+uds_windows = "1.0"
+
 [build-dependencies]
 tonic-build = { version = "0.8", features = ["prost"] } # Required for tonic

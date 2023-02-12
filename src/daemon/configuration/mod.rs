@@ -8,6 +8,14 @@ pub struct Configuration {
 }
 
 impl Configuration {
+    pub fn read_or_create() -> Self {
+        let path = std::path::Path::new("configuration.yml");
+        let file = std::fs::File::open(path).unwrap();
+        let buffer = std::io::BufReader::new(file);
+        use std::io::Read;
+        serde_yaml::from_reader(buffer).unwrap()
+    }
+
     pub fn command_allowed(&self, command: &str) -> bool {
         self.whitelist == command
     }
