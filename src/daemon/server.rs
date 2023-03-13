@@ -1,6 +1,7 @@
 #![cfg_attr(not(unix), allow(unused_imports))]
 
 use tonic::{Code, Request, Response, Status};
+use libcommand::Command;
 
 use libcommand::interpreter::{
     unix_server::Unix,
@@ -18,6 +19,16 @@ impl Unix for DaemonServer {
         request: Request<AuthorizeRequest>,
     ) -> Result<Response<AuthorizeResponse>, Status> {
         let session = libcommand::Session::from(request.get_ref().pid);
+        let cmd = Command::from(request.get_ref().command_arg.as_ref());
+
+        let conf = super::CONFIGURATION.lock()
+            .map_err(|e| Status::internal(e.to_string()))?;
+        let conf = conf.as_ref().ok_or_else(|| Status::internal("Configuration not loaded"))?;
+
+        if !conf.command_allowed(&cmd.command) {
+            return Err(Status::permission_denied("Command not authorized"));
+        }
+
         let session_id = session.id.clone();
         super::SESSIONS.lock().unwrap().push(session);
 
