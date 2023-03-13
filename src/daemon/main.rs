@@ -32,7 +32,7 @@ use libcommand::interpreter::unix_server::UnixServer;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(Path::new(libcommand::SOCK_FILE).parent().unwrap())?;
 
-    *CONFIGURATION.get_mut().unwrap() = Some(configuration::Configuration::read_or_create());
+    *CONFIGURATION.lock().unwrap() = Some(configuration::Configuration::read_or_create());
 
     let server = server::DaemonServer::default();
 
