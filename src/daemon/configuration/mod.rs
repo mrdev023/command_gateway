@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Default)]
 pub struct Configuration {
     whitelist: whitelist::Whitelist,
+    endpoint: Option<String>
 }
 
 impl Configuration {
@@ -19,5 +20,9 @@ impl Configuration {
 
     pub fn command_allowed(&self, command: &str) -> bool {
         self.whitelist == command
+    }
+
+    pub fn get_endpoint(&self) -> Option<&String> {
+        self.endpoint.as_ref()
     }
 }

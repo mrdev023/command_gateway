@@ -33,6 +33,7 @@ tokio-stream = { version = "0.1", features = ["net"] } # Required for tonic with
 tower = "0.4" # Required for tonic with unix socket
 prost = "0.11" # Required for tonic
 tonic = "0.8"
+reqwest = "0.11.14"
 
 [target.'cfg(windows)'.dependencies]
 uds_windows = "1.0"

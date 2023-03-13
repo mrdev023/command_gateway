@@ -19,21 +19,55 @@ impl Unix for DaemonServer {
         request: Request<AuthorizeRequest>,
     ) -> Result<Response<AuthorizeResponse>, Status> {
         let session = libcommand::Session::from(request.get_ref().pid);
-        let cmd = Command::from(request.get_ref().command_arg.as_ref());
+        let cmd_arg = request.get_ref().command_arg.clone();
+        let cmd = Command::from(cmd_arg.as_str());
 
-        let conf = super::CONFIGURATION.lock()
-            .map_err(|e| Status::internal(e.to_string()))?;
-        let conf = conf.as_ref().ok_or_else(|| Status::internal("Configuration not loaded"))?;
+        let endpoint  = {
+            let conf_mutex = super::CONFIGURATION.lock()
+                .map_err(|e| Status::internal(e.to_string()))?;
+            let conf = conf_mutex.as_ref().ok_or_else(|| Status::internal("Configuration not loaded"))?;
 
-        if !conf.command_allowed(&cmd.command) {
-            return Err(Status::permission_denied("Command not authorized"));
+            if !conf.command_allowed(&cmd.command) {
+                return Err(Status::permission_denied("Command not authorized"));
+            }
+
+            conf.get_endpoint()
+                .and_then(|endpoint| Some(endpoint.clone()))
+        };
+
+        if let Some(endpoint) = endpoint {
+            let client = reqwest::Client::new();
+            let res = client.post(endpoint)
+                .body(cmd_arg.clone())
+                .send()
+                .await
+                .map_err(|_| Status::internal("ENDPOINT: Not reachable"))?;
+            let status = res.status();
+
+            if status.is_client_error() {
+                return match status {
+                    reqwest::StatusCode::UNAUTHORIZED => {
+                        Err(Status::unauthenticated("ENDPOINT: Not authorized"))
+                    },
+                    reqwest::StatusCode::BAD_REQUEST => {
+                        Err(Status::unauthenticated("ENDPOINT: Invalid metadata"))
+                    },
+                    _ => {
+                        Err(Status::permission_denied("ENDPOINT: Permission denied"))
+                    }
+                }
+            } else if status.is_server_error() {
+                return Err(Status::internal("ENDPOINT: Internal error"));
+            } else if status.is_informational() || status.is_redirection() {
+                return Err(Status::unimplemented("ENDPOINT: Status code not supported"));
+            }
         }
 
         let session_id = session.id.clone();
         super::SESSIONS.lock().unwrap().push(session);
 
         Ok(Response::new(AuthorizeResponse {
-            command_arg: request.get_ref().command_arg.clone(),
+            command_arg: cmd_arg,
             session_id
         }))
     }
