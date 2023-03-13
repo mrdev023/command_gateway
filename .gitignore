@@ -1,1 +1,4 @@
 /target/
+command_gateway.sock
+configuration.yml
+session.log
