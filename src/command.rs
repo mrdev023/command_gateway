@@ -22,7 +22,13 @@ impl Into<std::process::Command> for Command {
 
 impl From<&str> for Command {
     fn from(value: &str) -> Self {
-        serde_json::from_str(value).unwrap_or_default()
+        match serde_json::from_str(value) {
+            Ok(command) => command,
+            Err(e) => {
+                eprintln!("[ERROR] {e}");
+                Command::default()
+            }
+        }
     }
 }
 
