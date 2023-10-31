@@ -1,3 +1,7 @@
+# Archived !!!
+
+Use https://github.com/ovh/the-bastion instead
+
 # Project
 
 ## Requirements
